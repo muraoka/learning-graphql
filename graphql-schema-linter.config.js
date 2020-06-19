@@ -4,7 +4,7 @@ module.exports = {
     'defined-types-are-used',
     'deprecations-have-a-reason',
     'descriptions-are-capitalized',
-    'enum-values-all-caps',
+    // 'enum-values-all-caps',
     // 'enum-values-have-descriptions',
     // 'enum-values-sorted-alphabetically',
     'fields-are-camel-cased',
