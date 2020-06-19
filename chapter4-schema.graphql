@@ -5,24 +5,44 @@ schema {
 
 type Query {
   totalPhotos: Int!
-  allPhotos(
-    category: PhotoCategory
-    sort: SortDirection = DESCENDING
-    sortBy: SortablePhotoField = created
-  ): [Photo!]!
+  allPhotos(filter: PhotoFilter, paging: DataPage, sorting: DataSort): [Photo!]!
   totalUsers: Int!
-  allUsers(first: Int = 50, start: Int = 0): [User!]!
+  allUsers(paging: DataPage, sorting: DataSort): [User!]!
   user(githubLogin: ID!): User!
   photo(id: ID!): Photo!
   agenda: [AgendaItem!]!
 }
 
+input PostPhotoInput {
+  name: String!
+  description: String
+  category: PhotoCategory = PORTRAIT
+}
+
+input PhotoFilter {
+  category: PhotoCategory
+  createdBetween: DateRange
+  taggedUsers: [ID!]
+  searchText: String
+}
+
+input DateRange {
+  start: DateTime!
+  end: DateTime!
+}
+
+input DataPage {
+  first: Int = 25
+  start: Int = 0
+}
+
+input DataSort {
+  sort: SortDirection = DESCENDING
+  sortBy: SortablePhotoField = created
+}
+
 type Mutation {
-  postPhoto(
-    name: String!
-    description: String
-    category: PhotoCategory = PORTRAIT
-  ): Photo!
+  postPhoto(input: PostPhotoInput!): Photo!
 }
 
 scalar DateTime
@@ -55,7 +75,7 @@ type Photo {
   created: DateTime!
   category: PhotoCategory!
   postedBy: User!
-  taggedUsers: [User!]!
+  taggedUsers(sorting: DataSort): [User!]!
 }
 
 type User {
@@ -63,11 +83,9 @@ type User {
   name: String
   avatar: String
   postedPhotos(
-    first: Int = 25
-    start: Int = 0
-    sort: SortDirection = DESCENDING
-    sortBy: SortablePhotoField = created
-    category: PhotoCategory
+    filter: PhotoFilter
+    paging: DataPage
+    sorting: DataSort
   ): [Photo!]!
   inPhotos: [Photo!]!
   friends: [Friendship!]!
