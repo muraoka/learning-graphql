@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "fmt": "prettier --write *.graphql"
+    "fmt": "prettier --write *.graphql",
+    "check": "graphql-schema-linter --config-directory graphql-schema-linter.config.js *.graphql"
   },
   "repository": {
     "type": "git",
@@ -12,6 +13,7 @@
   "author": "muraoka",
   "license": "MIT",
   "devDependencies": {
+    "graphql-schema-linter": "^0.4.0",
     "prettier": "^2.0.5"
   }
 }
