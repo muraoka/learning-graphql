@@ -1,6 +1,12 @@
 schema {
   query: Query
   mutation: Mutation
+  subscription: Subscription
+}
+
+type Subscription {
+  newPhoto(category: PhotoCategory): Photo!
+  newUser: User!
 }
 
 type Query {
