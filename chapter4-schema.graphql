@@ -41,8 +41,14 @@ input DataSort {
   sortBy: SortablePhotoField = created
 }
 
+type AuthPayload {
+  user: User!
+  token: String!
+}
+
 type Mutation {
   postPhoto(input: PostPhotoInput!): Photo!
+  githubAuth(code: String!): AuthPayload!
 }
 
 scalar DateTime
