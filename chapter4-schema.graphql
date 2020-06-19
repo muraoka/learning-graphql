@@ -19,9 +19,23 @@ type Query {
   agenda: [AgendaItem!]!
 }
 
+"""
+postPhotoで送信される入力
+"""
 input PostPhotoInput {
+  """
+  新しい写真の名前
+  """
   name: String!
+
+  """
+  (optional)写真の簡単な説明
+  """
   description: String
+
+  """
+  (optional)写真のカテゴリ
+  """
   category: PhotoCategory = PORTRAIT
 }
 
@@ -53,8 +67,15 @@ type AuthPayload {
 }
 
 type Mutation {
-  postPhoto(input: PostPhotoInput!): Photo!
-  githubAuth(code: String!): AuthPayload!
+  postPhoto("新しい写真の名前、説明、カテゴリ" input: PostPhotoInput!): Photo!
+
+  """
+  GitHubユーザーで認可
+  """
+  githubAuth(
+    "ユーザーの認可のために送信されるGitHubの一意のコード"
+    code: String!
+  ): AuthPayload!
 }
 
 scalar DateTime
@@ -90,15 +111,37 @@ type Photo {
   taggedUsers(sorting: DataSort): [User!]!
 }
 
+"""
+最低一度はGitHubで認可されたユーザー
+"""
 type User {
+  """
+  ユーザーの一位のGitHubログインID
+  """
   githubLogin: ID!
+
+  """
+  ユーザーの姓名
+  """
   name: String
+
+  """
+  ユーザーのGitHubのプロフィール画像のURL
+  """
   avatar: String
+
+  """
+  このユーザーが投稿した全写真
+  """
   postedPhotos(
     filter: PhotoFilter
     paging: DataPage
     sorting: DataSort
   ): [Photo!]!
+
+  """
+  このユーザーが含まれる全写真
+  """
   inPhotos: [Photo!]!
   friends: [Friendship!]!
 }
