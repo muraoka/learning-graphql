@@ -1,3 +1,15 @@
+schema {
+  query: Query
+}
+
+type Query {
+  totalPhotos: Int!
+  allPhotos: [Photo!]!
+  totalUsers: Int!
+  allUsers: [User!]!
+  agenda: [AgendaItem!]!
+}
+
 scalar DateTime
 
 enum PhotoCategory {
@@ -15,4 +27,57 @@ type Photo {
   description: String
   created: DateTime!
   category: PhotoCategory!
+  postedBy: User!
+  taggedUsers: [User!]!
+}
+
+type User {
+  githubLogin: ID!
+  name: String
+  avatar: String
+  postedPhotos: [Photo!]!
+  inPhotos: [Photo!]!
+  friends: [Friendship!]!
+}
+
+scalar Location
+
+type Friendship {
+  friends: [User!]!
+  howLong: Int!
+  whereWeMet: Location
+}
+
+# union AgendaItem = StudyGroup | Workout
+
+# type StudyGroup {
+#   name: String!
+#   subject: String!
+#   students: [User!]!
+# }
+
+# type Workout {
+#   name: String!
+#   reps: Int!
+# }
+
+interface AgendaItem {
+  name: String!
+  start: DateTime!
+  end: DateTime!
+}
+
+type StudyGroup implements AgendaItem {
+  name: String!
+  start: DateTime!
+  end: DateTime!
+  participants: [User!]!
+  topic: String!
+}
+
+type Workout implements AgendaItem {
+  name: String!
+  start: DateTime!
+  end: DateTime!
+  reps: Int!
 }
