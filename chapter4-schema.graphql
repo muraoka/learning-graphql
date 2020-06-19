@@ -1,5 +1,6 @@
 schema {
   query: Query
+  mutation: Mutation
 }
 
 type Query {
@@ -14,6 +15,14 @@ type Query {
   user(githubLogin: ID!): User!
   photo(id: ID!): Photo!
   agenda: [AgendaItem!]!
+}
+
+type Mutation {
+  postPhoto(
+    name: String!
+    description: String
+    category: PhotoCategory = PORTRAIT
+  ): Photo!
 }
 
 scalar DateTime
