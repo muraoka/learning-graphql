@@ -1,0 +1,18 @@
+scalar DateTime
+
+enum PhotoCategory {
+  SELFIE
+  PORTRAIT
+  ACTION
+  LANDSCAPE
+  GRAPHIC
+}
+
+type Photo {
+  id: ID!
+  name: String!
+  url: String!
+  description: String
+  created: DateTime!
+  category: PhotoCategory!
+}
