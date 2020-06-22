@@ -8,8 +8,10 @@
   },
   "author": "muraoka",
   "dependencies": {
-    "apollo-server": "^2.15.0",
-    "graphql": "^15.1.0"
+    "apollo-server-express": "^2.15.0",
+    "express": "^4.17.1",
+    "graphql": "^15.1.0",
+    "graphql-playground-middleware-express": "^1.7.18"
   },
   "devDependencies": {
     "@types/graphql": "^14.5.0",
