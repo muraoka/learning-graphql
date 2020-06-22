@@ -6,7 +6,6 @@ const users = [
   { githubLogin: 'sSchmidt', name: 'Scat Schmidt' },
 ];
 
-let _id = 0;
 const photos = [
   {
     id: '1',
@@ -40,8 +39,36 @@ const tags = [
   { photoID: '2', userID: 'gPlake' },
 ];
 
+const requestGithubToken = (credentials) =>
+  fetch('http://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(credentials),
+  })
+    .then((res) => res.json())
+    .catch((error) => {
+      throw new Error(JSON.stringify(error));
+    });
+
+const requestGithubUserAccount = (token) =>
+  fetch(`https://api.github.com/user?access_token=${token}`)
+    .then((res) => res.json())
+    .catch((error) => {
+      throw new Error(JSON.stringify(error));
+    });
+
+async function authorizeWithGithub(credentials) {
+  const { access_token } = await requestGithubToken(credentials);
+  const githubUser = await requestGithubUserAccount(access_token);
+  return { ...githubUser, access_token };
+}
+
 const resolvers = {
   Query: {
+    me: (parent, args, { currentUser }) => currentUser,
     totalPhotos: (parent, args, { db }) =>
       db.collection('photos').estimatedDocumentCount(),
     allPhotos: (parent, args, { db }) =>
@@ -51,20 +78,78 @@ const resolvers = {
     allUsers: (parent, args, { db }) => db.collection('users').find().toArray(),
   },
   Mutation: {
-    postPhoto(parent, args) {
+    githubAuth: async (parent, { code }, { db }) => {
+      const {
+        message,
+        access_token,
+        avatar_url,
+        login,
+        name,
+      } = await authorizeWithGithub({
+        client_id: process.env.client_id,
+        client_secret: process.env.client_secret,
+        code,
+      });
+      if (message) {
+        throw new Error(message);
+      }
+      const latestUserInfo = {
+        name,
+        githubLogin: login,
+        githubToken: access_token,
+        avatar: avatar_url,
+      };
+      const {
+        ops: [user],
+      } = await db
+        .collection('users')
+        .replaceOne({ githubLogin: login }, latestUserInfo, { upsert: true });
+      return { user, token: access_token };
+    },
+    postPhoto: async (parent, args, { db, currentUser }) => {
+      if (!currentUser) {
+        throw new Error('only an authorized user can post a photo');
+      }
       const newPhoto = {
-        id: _id++,
         ...args.input,
+        userID: currentUser.githubLogin,
         created: new Date(),
       };
-      photos.push(newPhoto);
+      const { insertedIds } = await db.collection('photos').insert(newPhoto);
+      newPhoto.id = insertedIds[0];
+
       return newPhoto;
+    },
+    addFakeUsers: async (root, { count }, { db }) => {
+      const randomUserApi = `https://randomuser.me/api/?results=${count}`;
+      const { results } = await (await fetch(randomUserApi)).json();
+      const users = results.map((r) => ({
+        githubLogin: r.login.username,
+        name: `${r.name.first} ${r.name.last}`,
+        avatar: r.picture.thumbnail,
+        githubToken: r.login.sha1,
+      }));
+      await db.collection('users').insert(users);
+
+      return users;
+    },
+    fakeUserAuth: async (parent, { githubLogin }, { db }) => {
+      const user = await db.collection('users').findOne({ githubLogin });
+      if (!user) {
+        throw new Error(`Cannot find user with githubLogin ${githubLogin}`);
+      }
+
+      return {
+        token: user.githubToken,
+        user,
+      };
     },
   },
   Photo: {
+    id: (parent) => parent.id || parent._id,
     url: (parent) => `http://yoursite.com/img/${parent.id}.jpg`,
-    postedBy: (parent) => {
-      return users.find((u) => u.githubLogin === parent.githubUser);
+    postedBy: (parent, args, { db }) => {
+      db.collection('users').findOne({ githubLogin: parent.userID });
     },
     taggedUsers: (parent) =>
       tags
