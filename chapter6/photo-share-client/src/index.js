@@ -3,7 +3,19 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { ApolloProvider } from 'react-apollo'
-import ApolloClient from 'apollo-boost'
+import ApolloClient, { InMemoryCache } from 'apollo-boost'
+import { persistCache } from 'apollo-cache-persist'
+
+const cache = new InMemoryCache()
+persistCache({
+  cache,
+  storage: localStorage
+})
+
+if (localStorage['apollo-cache-persist']) {
+  const cacheData = JSON.parse(localStorage['apollo-cache-persist'])
+  cache.restore(cacheData)
+}
 
 const client = new ApolloClient({
   uri: 'http://localhost:4000/graphql',
@@ -14,7 +26,8 @@ const client = new ApolloClient({
         authorization: localStorage.getItem('token')
       }
     }))
-  }
+  },
+  cache
 })
 
 ReactDOM.render(
