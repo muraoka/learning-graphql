@@ -9,7 +9,7 @@
   "author": "muraoka",
   "dependencies": {
     "apollo-server-express": "^2.15.0",
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "graphql": "^15.1.0",
     "graphql-playground-middleware-express": "^1.7.18",
     "mongodb": "^3.5.9"
